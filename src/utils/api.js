@@ -1,4 +1,4 @@
-export async function generateDeck(settings, params) {
+export async function generateDeckStream(settings, params, onChunk) {
   const { apiKey, baseUrl, modelName } = settings;
   const { targetLanguage, nativeLanguage, nicheTopic, numCards } = params;
 
@@ -10,9 +10,9 @@ export async function generateDeck(settings, params) {
 Generate a flashcard deck for learning ${targetLanguage} (native language: ${nativeLanguage}).
 The deck must focus on the specific niche topic: "${nicheTopic}".
 You must generate exactly ${numCards} cards.
-You must output ONLY a valid JSON object containing a single key "cards" which is an array of objects.
-Do not include any markdown formatting or extra text.
-Each object in the array must follow this exact schema:
+You must output ONLY a valid JSON array of objects. Do not wrap it in a json code block or add any extra text. 
+Start immediately with [ and end with ].
+Each object must follow this exact schema:
 {
   "target_word": "string",
   "pronunciation": "string",
@@ -32,10 +32,10 @@ Each object in the array must follow this exact schema:
       model: modelName,
       messages: [
         { role: "system", content: systemPrompt },
-        { role: "user", content: `Generate the ${numCards} flashcards on "${nicheTopic}". Output as JSON.` }
+        { role: "user", content: `Generate the ${numCards} flashcards on "${nicheTopic}" as a JSON array.` }
       ],
       temperature: 0.7,
-      response_format: { type: "json_object" }
+      stream: true
     })
   });
 
@@ -44,12 +44,45 @@ Each object in the array must follow this exact schema:
     throw new Error(`API Error (${response.status}): ${errorData}`);
   }
 
-  const data = await response.json();
-  const content = data.choices[0].message.content;
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder("utf-8");
+  let fullText = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    
+    const chunk = decoder.decode(value, { stream: true });
+    const lines = chunk.split('\n');
+    
+    for (const line of lines) {
+      if (line.startsWith('data: ') && line !== 'data: [DONE]') {
+        try {
+          const data = JSON.parse(line.slice(6));
+          const content = data.choices[0]?.delta?.content || "";
+          fullText += content;
+          if (onChunk) onChunk(fullText, content);
+        } catch (e) {
+          // ignore parse errors for partial chunks
+        }
+      }
+    }
+  }
+  
+  // Try to parse the complete text
+  let jsonString = fullText.trim();
+  
+  // Attempt to extract JSON if LLM added markdown formatting
+  const match = jsonString.match(/\[[\s\S]*\]/);
+  if (match) {
+    jsonString = match[0];
+  }
+
   try {
-    const parsed = JSON.parse(content);
+    const parsed = JSON.parse(jsonString);
     return parsed.cards || parsed; 
   } catch (err) {
-    throw new Error("Failed to parse LLM response as JSON: " + content);
+    console.error("Failed to parse JSON:", jsonString);
+    throw new Error("Failed to parse LLM response as JSON. See console for details.");
   }
 }

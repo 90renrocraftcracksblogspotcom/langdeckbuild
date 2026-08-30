@@ -33,49 +33,49 @@ export default function SettingsModal({ isOpen, onClose, onSave }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
           />
           <motion.div 
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 relative z-10"
+            className="bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl w-full max-w-md p-8 relative z-10"
           >
             <button 
               onClick={onClose}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-1 rounded-full transition-colors"
+              className="absolute top-6 right-6 text-slate-500 hover:text-white hover:bg-slate-800 p-2 rounded-full transition-colors"
             >
-              <X size={24} />
+              <X size={20} />
             </button>
-            <h2 className="text-2xl font-bold text-slate-800 mb-6">Settings</h2>
+            <h2 className="text-2xl font-bold text-white mb-8 tracking-tight">Settings</h2>
             
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1">API Key</label>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">API Key</label>
                 <input 
                   type="password" 
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
-                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow"
+                  className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-white transition-shadow"
                   placeholder="sk-..."
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1">Base URL</label>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Base URL</label>
                 <input 
                   type="text" 
                   value={baseUrl}
                   onChange={(e) => setBaseUrl(e.target.value)}
-                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow"
+                  className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-white transition-shadow"
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1">Model Name</label>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Model Name</label>
                 <input 
                   type="text" 
                   value={modelName}
                   onChange={(e) => setModelName(e.target.value)}
-                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow"
+                  className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-white transition-shadow"
                 />
               </div>
               
@@ -83,7 +83,7 @@ export default function SettingsModal({ isOpen, onClose, onSave }) {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleSave}
-                className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-colors mt-6 shadow-md hover:shadow-lg"
+                className="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-500 transition-colors mt-8 shadow-lg shadow-blue-900/30"
               >
                 Save Settings
               </motion.button>

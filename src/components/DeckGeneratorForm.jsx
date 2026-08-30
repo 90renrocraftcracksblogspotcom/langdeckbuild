@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function DeckGeneratorForm({ onGenerate, isLoading }) {
@@ -15,51 +15,54 @@ export default function DeckGeneratorForm({ onGenerate, isLoading }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-8 rounded-2xl shadow-xl border border-slate-100 max-w-lg w-full mx-auto">
-      <h2 className="text-2xl font-bold text-slate-800 mb-6 text-center">Create New Deck</h2>
+    <form onSubmit={handleSubmit} className="bg-slate-900/50 backdrop-blur-xl p-8 rounded-3xl shadow-2xl border border-slate-800 w-full">
+      <div className="flex items-center justify-center mb-8 space-x-3">
+        <Sparkles className="text-blue-500" size={24} />
+        <h2 className="text-3xl font-extrabold text-white tracking-tight">Design a Deck</h2>
+      </div>
       
-      <div className="space-y-5">
-        <div className="grid grid-cols-2 gap-4">
+      <div className="space-y-6">
+        <div className="grid grid-cols-2 gap-5">
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">Target Language</label>
+            <label className="block text-sm font-bold text-slate-400 mb-2 tracking-wide">Target Language</label>
             <input 
               type="text" 
               required
               placeholder="e.g., French"
               value={targetLanguage}
               onChange={(e) => setTargetLanguage(e.target.value)}
-              className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow bg-slate-50 focus:bg-white"
+              className="w-full px-5 py-3.5 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-white placeholder-slate-600 transition-all"
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">Native Language</label>
+            <label className="block text-sm font-bold text-slate-400 mb-2 tracking-wide">Native Language</label>
             <input 
               type="text" 
               required
               placeholder="e.g., English"
               value={nativeLanguage}
               onChange={(e) => setNativeLanguage(e.target.value)}
-              className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow bg-slate-50 focus:bg-white"
+              className="w-full px-5 py-3.5 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-white placeholder-slate-600 transition-all"
             />
           </div>
         </div>
         
         <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1">Niche Topic</label>
+          <label className="block text-sm font-bold text-slate-400 mb-2 tracking-wide">Niche Topic</label>
           <input 
             type="text" 
             required
             placeholder="e.g., Tokyo subway navigation"
             value={nicheTopic}
             onChange={(e) => setNicheTopic(e.target.value)}
-            className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow bg-slate-50 focus:bg-white"
+            className="w-full px-5 py-3.5 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 text-white placeholder-slate-600 transition-all"
           />
         </div>
         
-        <div className="pt-2">
-          <label className="block text-sm font-semibold text-slate-700 mb-2 flex justify-between items-center">
-            <span>Number of Cards</span>
-            <span className="bg-blue-100 text-blue-700 py-1 px-3 rounded-full text-xs font-bold">{numCards}</span>
+        <div className="pt-4">
+          <label className="flex justify-between items-center mb-4">
+            <span className="text-sm font-bold text-slate-400 tracking-wide">Number of Cards</span>
+            <span className="bg-blue-500/20 text-blue-400 py-1 px-3 rounded-full text-sm font-black">{numCards}</span>
           </label>
           <input 
             type="range" 
@@ -67,7 +70,7 @@ export default function DeckGeneratorForm({ onGenerate, isLoading }) {
             max="20" 
             value={numCards}
             onChange={(e) => setNumCards(Number(e.target.value))}
-            className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+            className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
           />
         </div>
         
@@ -76,12 +79,12 @@ export default function DeckGeneratorForm({ onGenerate, isLoading }) {
           whileTap={{ scale: isLoading ? 1 : 0.98 }}
           type="submit" 
           disabled={isLoading}
-          className="w-full bg-slate-800 text-white font-bold py-3.5 rounded-xl hover:bg-slate-900 transition-colors mt-6 flex justify-center items-center disabled:opacity-70 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
+          className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-lg py-4 rounded-xl hover:from-blue-500 hover:to-indigo-500 transition-all mt-8 flex justify-center items-center disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:shadow-[0_0_30px_rgba(37,99,235,0.5)]"
         >
           {isLoading ? (
             <>
-              <Loader2 className="animate-spin mr-3" size={20} />
-              Generating...
+              <Loader2 className="animate-spin mr-3" size={24} />
+              Generating Magic...
             </>
           ) : (
             'Generate Deck'

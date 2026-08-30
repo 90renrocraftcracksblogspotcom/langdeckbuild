@@ -10,7 +10,7 @@ import { toast } from 'react-hot-toast';
 export default function FlashcardViewer({ deck, topic, onBack }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentDeck, setCurrentDeck] = useState(deck);
-  const [direction, setDirection] = useState(0); // 1 for right, -1 for left
+  const [direction, setDirection] = useState(0);
 
   if (!currentDeck || currentDeck.length === 0) return null;
 
@@ -28,7 +28,7 @@ export default function FlashcardViewer({ deck, topic, onBack }) {
     const shuffled = [...currentDeck].sort(() => Math.random() - 0.5);
     setCurrentDeck(shuffled);
     setCurrentIndex(0);
-    toast('Deck Shuffled!', { icon: '🔀' });
+    toast('Deck Shuffled!', { icon: '🔀', style: { background: '#1e293b', color: '#fff' } });
   };
 
   const handleExport = () => {
@@ -39,7 +39,7 @@ export default function FlashcardViewer({ deck, topic, onBack }) {
       origin: { y: 0.6 },
       colors: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444']
     });
-    toast.success('Exported to Anki successfully!');
+    toast.success('Exported to Anki successfully!', { style: { background: '#1e293b', color: '#fff' } });
   };
 
   const handlers = useSwipeable({
@@ -51,33 +51,33 @@ export default function FlashcardViewer({ deck, topic, onBack }) {
 
   return (
     <div className="max-w-2xl w-full mx-auto" {...handlers}>
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex justify-between items-center mb-10">
         <motion.button 
           whileHover={{ x: -4 }}
           onClick={onBack}
-          className="text-slate-500 hover:text-slate-800 flex items-center transition-colors font-medium"
+          className="text-slate-400 hover:text-white flex items-center transition-colors font-semibold"
         >
-          <ArrowLeftCircle className="mr-2" size={22} />
-          Back
+          <ArrowLeftCircle className="mr-2" size={24} />
+          Go Back
         </motion.button>
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={handleExport}
-          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center transition-colors shadow-md hover:shadow-lg"
+          className="bg-green-600 hover:bg-green-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold flex items-center transition-colors shadow-lg shadow-green-900/20"
         >
           <Download className="mr-2" size={18} />
           Export to Anki
         </motion.button>
       </div>
 
-      <div className="mb-6 text-center">
-        <span className="bg-blue-100 text-blue-800 text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider shadow-sm">
+      <div className="mb-8 text-center">
+        <span className="bg-slate-800 border border-slate-700 text-blue-400 text-xs font-black px-5 py-2 rounded-full uppercase tracking-widest shadow-sm">
           {topic}
         </span>
       </div>
 
-      <div className="relative h-80 w-full overflow-visible">
+      <div className="relative h-96 w-full overflow-visible">
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
             key={currentIndex}
@@ -93,27 +93,27 @@ export default function FlashcardViewer({ deck, topic, onBack }) {
         </AnimatePresence>
       </div>
 
-      <div className="mt-10 flex items-center justify-between px-2">
+      <div className="mt-12 flex items-center justify-between px-4">
         <motion.button 
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           onClick={prevCard}
-          className="p-4 rounded-full bg-white text-slate-700 shadow-md hover:shadow-lg hover:text-blue-600 transition-all"
+          className="p-4 rounded-full bg-slate-800 text-slate-300 shadow-xl border border-slate-700 hover:bg-slate-700 hover:text-white transition-all"
           aria-label="Previous card"
         >
           <ArrowLeft size={24} />
         </motion.button>
 
         <div className="text-slate-500 font-bold tracking-widest text-sm">
-          {currentIndex + 1} <span className="text-slate-300">/</span> {currentDeck.length}
+          <span className="text-white text-lg">{currentIndex + 1}</span> / {currentDeck.length}
         </div>
 
-        <div className="flex space-x-4">
+        <div className="flex space-x-5">
           <motion.button 
             whileHover={{ scale: 1.1, rotate: 180 }}
             whileTap={{ scale: 0.9 }}
             onClick={shuffleDeck}
-            className="p-4 rounded-full bg-white text-slate-700 shadow-md hover:shadow-lg hover:text-purple-600 transition-all"
+            className="p-4 rounded-full bg-slate-800 text-slate-300 shadow-xl border border-slate-700 hover:bg-slate-700 hover:text-purple-400 transition-all"
             title="Shuffle Deck"
           >
             <Shuffle size={20} />
@@ -123,7 +123,7 @@ export default function FlashcardViewer({ deck, topic, onBack }) {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={nextCard}
-            className="p-4 rounded-full bg-white text-slate-700 shadow-md hover:shadow-lg hover:text-blue-600 transition-all"
+            className="p-4 rounded-full bg-slate-800 text-slate-300 shadow-xl border border-slate-700 hover:bg-slate-700 hover:text-blue-400 transition-all"
             aria-label="Next card"
           >
             <ArrowRight size={24} />

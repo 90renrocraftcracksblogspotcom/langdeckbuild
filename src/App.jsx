@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import SettingsModal from './components/SettingsModal';
 import DeckGeneratorForm from './components/DeckGeneratorForm';
 import FlashcardViewer from './components/FlashcardViewer';
-import { generateDeck } from './utils/api';
-import { Settings, BookOpen } from 'lucide-react';
+import Sidebar from './components/Sidebar';
+import { generateDeckStream } from './utils/api';
+import { saveDeckToHistory, getDeckHistory, deleteDeckFromHistory } from './utils/storage';
 import { Toaster, toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -15,21 +16,22 @@ export default function App() {
     modelName: 'gpt-4o-mini'
   });
   
+  const [history, setHistory] = useState([]);
   const [currentDeck, setCurrentDeck] = useState(null);
   const [currentTopic, setCurrentTopic] = useState('');
+  
   const [isLoading, setIsLoading] = useState(false);
+  const [streamedText, setStreamedText] = useState("");
 
-  // Load settings on mount
   useEffect(() => {
     const savedKey = localStorage.getItem('langdeck_api_key') || '';
     const savedUrl = localStorage.getItem('langdeck_base_url') || 'https://api.openai.com/v1/chat/completions';
     const savedModel = localStorage.getItem('langdeck_model') || 'gpt-4o-mini';
     setSettings({ apiKey: savedKey, baseUrl: savedUrl, modelName: savedModel });
     
-    // Auto-open settings if no API key
-    if (!savedKey) {
-      setIsSettingsOpen(true);
-    }
+    setHistory(getDeckHistory());
+    
+    if (!savedKey) setIsSettingsOpen(true);
   }, []);
 
   const handleSaveSettings = (newSettings) => {
@@ -45,12 +47,21 @@ export default function App() {
     }
 
     setIsLoading(true);
+    setStreamedText("");
+    setCurrentDeck(null);
+    
     const loadingToast = toast.loading('Generating your custom deck...');
     
     try {
-      const cards = await generateDeck(settings, params);
-      setCurrentDeck(cards);
+      const cards = await generateDeckStream(settings, params, (full, chunk) => {
+        setStreamedText(full);
+      });
+      
+      const newHistory = saveDeckToHistory(params.nicheTopic, cards);
+      setHistory(newHistory);
+      setCurrentDeck({ ...newHistory[0] });
       setCurrentTopic(params.nicheTopic);
+      
       toast.success('Deck generated successfully!', { id: loadingToast });
     } catch (err) {
       toast.error(err.message || 'Failed to generate deck', { id: loadingToast });
@@ -59,35 +70,34 @@ export default function App() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 overflow-x-hidden">
-      <Toaster position="top-center" reverseOrder={false} />
-      
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
-        <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="flex items-center space-x-2 text-blue-600"
-          >
-            <BookOpen size={28} />
-            <h1 className="text-xl font-bold tracking-tight text-slate-800">LangDeck Builder</h1>
-          </motion.div>
-          <motion.button 
-            whileHover={{ rotate: 90, scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={() => setIsSettingsOpen(true)}
-            className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-full transition-colors"
-            title="Settings"
-          >
-            <Settings size={24} />
-          </motion.button>
-        </div>
-      </header>
+  const handleSelectDeck = (deck) => {
+    setCurrentDeck(deck);
+    setCurrentTopic(deck.topic);
+  };
 
-      {/* Main Content */}
-      <main className="max-w-5xl mx-auto px-4 py-8 relative min-h-[calc(100vh-64px)]">
+  const handleDeleteDeck = (id) => {
+    setHistory(deleteDeckFromHistory(id));
+    if (currentDeck?.id === id) {
+      setCurrentDeck(null);
+      setCurrentTopic("");
+    }
+    toast('Deck deleted.', { icon: '🗑️' });
+  };
+
+  return (
+    <div className="flex h-screen bg-slate-950 font-sans text-slate-100 overflow-hidden">
+      <Toaster position="top-right" />
+      
+      <Sidebar 
+        history={history}
+        currentDeckId={currentDeck?.id}
+        onSelectDeck={handleSelectDeck}
+        onDeleteDeck={handleDeleteDeck}
+        onNewDeck={() => setCurrentDeck(null)}
+        onOpenSettings={() => setIsSettingsOpen(true)}
+      />
+
+      <main className="flex-1 overflow-y-auto relative p-8">
         <AnimatePresence mode="wait">
           {!currentDeck ? (
             <motion.div
@@ -96,11 +106,30 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
+              className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 h-full"
             >
-              <DeckGeneratorForm 
-                onGenerate={handleGenerateDeck} 
-                isLoading={isLoading} 
-              />
+              <div className="flex flex-col justify-center">
+                <DeckGeneratorForm 
+                  onGenerate={handleGenerateDeck} 
+                  isLoading={isLoading} 
+                />
+              </div>
+              
+              <div className="flex flex-col h-full py-8">
+                <div className="flex-1 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6 flex flex-col font-mono text-sm">
+                  <div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
+                    <span className="text-slate-400 font-semibold tracking-widest uppercase text-xs flex items-center">
+                      <div className={`w-2 h-2 rounded-full mr-3 ${isLoading ? 'bg-blue-500 animate-pulse' : 'bg-slate-700'}`}></div>
+                      AI Stream Terminal
+                    </span>
+                  </div>
+                  <div className="flex-1 overflow-y-auto text-green-400 whitespace-pre-wrap">
+                    {streamedText || (
+                      <span className="text-slate-600">Waiting for generation to start...</span>
+                    )}
+                  </div>
+                </div>
+              </div>
             </motion.div>
           ) : (
             <motion.div
@@ -109,10 +138,10 @@ export default function App() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.3 }}
-              className="w-full"
+              className="h-full flex items-center justify-center"
             >
               <FlashcardViewer 
-                deck={currentDeck} 
+                deck={currentDeck.cards} 
                 topic={currentTopic}
                 onBack={() => setCurrentDeck(null)}
               />
